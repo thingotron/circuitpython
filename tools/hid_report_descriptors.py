@@ -87,7 +87,6 @@ def keyboard_hid_descriptor(report_id):
              0x91, 0x01,                 #   Output (Constant)
              0xC0,                       # End Collection
             )))
->>>>>>> upstream/master
 
 def mouse_hid_descriptor(report_id):
     data = HID_DEVICE_DATA["MOUSE"]
@@ -281,47 +280,49 @@ def orbotron_hid_descriptor(report_id):
     data = HID_DEVICE_DATA["ORBOTRON"]
     return hid.ReportDescriptor(
         description="ORBOTRON",
-        report_descriptor=bytes([
-            0x05, 0x01,		# USAGE_PAGE (Generic Desktop)
-            0x09, 0x04,		# USAGE (Joystick)
-            0xa1, 0x01,		# COLLECTION (Application)
-            0x85, REPORT_IDS["ORBOTRON"], # REPORT_ID (n)
+        report_descriptor=bytes(
+            (0x05, 0x01,		# USAGE_PAGE (Generic Desktop)
+             0x09, 0x04,		# USAGE (Joystick)
+             0xa1, 0x01,		# COLLECTION (Application)
+             ) +
+            ((0x85, report_id) if report_id != 0 else ()) +
 
         #Buttons:
-        0x05, 0x09,			# USAGE_PAGE (Button)
-            0x19, 0x01,			# USAGE_MINIMUM (Button 1)
-            0x29, 0x10,			# USAGE_MAXIMUM (Button 16)
-            0x15, 0x00,			# LOGICAL_MINIMUM (0)
-            0x25, 0x01,			# LOGICAL_MAXIMUM (1)
-            0x75, 0x01,			# REPORT_SIZE (1)
-            0x95, 0x10,			# REPORT_COUNT (16)
-            0x55, 0x00,			# UNIT_EXPONENT (0)
-            0x65, 0x00,			# UNIT (None)
-            0x81, 0x02,			# INPUT (Data,Var,Abs)
+            (0x05, 0x09,			# USAGE_PAGE (Button)
+             0x19, 0x01,			# USAGE_MINIMUM (Button 1)
+             0x29, 0x10,			# USAGE_MAXIMUM (Button 16)
+             0x15, 0x00,			# LOGICAL_MINIMUM (0)
+             0x25, 0x01,			# LOGICAL_MAXIMUM (1)
+             0x75, 0x01,			# REPORT_SIZE (1)
+             0x95, 0x10,			# REPORT_COUNT (16)
+             0x55, 0x00,			# UNIT_EXPONENT (0)
+             0x65, 0x00,			# UNIT (None)
+             0x81, 0x02,			# INPUT (Data,Var,Abs)
+             ) +
 
-        0x05, 0x01,			# USAGE_PAGE (Generic Desktop)
+            (0x05, 0x01,			# USAGE_PAGE (Generic Desktop)
 
-        0x15, 0x00,			# LOGICAL_MINIMUM (0)
-            0x26, 0xff, 0x03,		# LOGICAL_MAXIMUM (1023)
-            0x75, 0x0a,			# REPORT_SIZE (10)
-            0x95, 0x06,		# REPORT_COUNT (6)
+             0x15, 0x00,			# LOGICAL_MINIMUM (0)
+             0x26, 0xff, 0x03,		# LOGICAL_MAXIMUM (1023)
+             0x75, 0x0a,			# REPORT_SIZE (10)
+             0x95, 0x06,		# REPORT_COUNT (6)
 
-        0x09, 0x04,			# USAGE (Pointer)
-            0xA1, 0x00,			# COLLECTION (Physical)
-            0x09, 0x30,		# USAGE (x)
-            0x09, 0x31,		# USAGE (y)
-            0x09, 0x32,		# USAGE (z)
-            0x09, 0x33,		# USAGE (rx)
-            0x09, 0x36,		# USAGE (slider)
-            0x09, 0x35,		# USAGE (rz)
-            0x81, 0x02,		# INPUT (Data,Var,Abs)
-            0xc0,			# END_COLLECTION
-            0x75, 0x04,             # REPORT_SIZE (8)
-            0x95, 0x01,             # REPORT_COUNT (1)
-            0x81, 0x03,             # INPUT (Cnst,Var,Abs)
+             0x09, 0x04,			# USAGE (Pointer)
+             0xA1, 0x00,			# COLLECTION (Physical)
+             0x09, 0x30,		# USAGE (x)
+             0x09, 0x31,		# USAGE (y)
+             0x09, 0x32,		# USAGE (z)
+             0x09, 0x33,		# USAGE (rx)
+             0x09, 0x36,		# USAGE (slider)
+             0x09, 0x35,		# USAGE (rz)
+             0x81, 0x02,		# INPUT (Data,Var,Abs)
+             0xc0,			# END_COLLECTION
+             0x75, 0x04,             # REPORT_SIZE (8)
+             0x95, 0x01,             # REPORT_COUNT (1)
+             0x81, 0x03,             # INPUT (Cnst,Var,Abs)
 
-        0xc0			# END_COLLECTION
-        ]))
+             0xc0			# END_COLLECTION
+            )))
 
 def raw_hid_descriptor(report_id):
     if report_id != 0:
@@ -356,6 +357,6 @@ REPORT_DESCRIPTOR_FUNCTIONS = {
     "GAMEPAD" : gamepad_hid_descriptor,
     "DIGITIZER" : digitizer_hid_descriptor,
     "XAC_COMPATIBLE_GAMEPAD" : xac_compatible_gamepad_hid_descriptor,
-    "RAW" : raw_hid_descriptor,,
+    "RAW" : raw_hid_descriptor,
     "ORBOTRON" : orbotron_hid_descriptor,
 }
