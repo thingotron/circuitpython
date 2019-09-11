@@ -85,6 +85,8 @@ void board_init(void) {
         16, // Color depth
         false, // grayscale
         false, // pixels_in_byte_share_row (unused for depths > 8)
+        1, // bytes per cell. Only valid for depths < 8
+        false, // reverse_pixels_in_byte. Only valid for depths < 8
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
@@ -96,7 +98,9 @@ void board_init(void) {
         1.0f, // brightness (ignored)
         true, // auto_brightness
         false, // single_byte_bounds
-        false); // data_as_commands
+        false, // data_as_commands
+        true, // auto_refresh
+        60); // native_frames_per_second
 }
 
 bool board_requests_safe_mode(void) {
