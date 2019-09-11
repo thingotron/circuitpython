@@ -236,7 +236,7 @@ ORBOTRON_WITH_ID = hid.ReportDescriptor(
         0x05, 0x01,		# USAGE_PAGE (Generic Desktop)
         0x09, 0x04,		# USAGE (Joystick)
         0xa1, 0x01,		# COLLECTION (Application)
-        0x85, REPORT_IDS["ORBOTRON"] # REPORT_ID (n)
+        0x85, REPORT_IDS["ORBOTRON"], # REPORT_ID (n)
 
         #Buttons:
         0x05, 0x09,			# USAGE_PAGE (Button)
