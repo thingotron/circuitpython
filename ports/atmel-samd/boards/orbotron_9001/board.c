@@ -25,6 +25,7 @@
  */
 
 #include "boards/board.h"
+#include "mpconfigboard.h"
 
 void board_init(void) {
 }
