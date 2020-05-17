@@ -3,6 +3,7 @@
 # The MIT License (MIT)
 #
 # Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# Copyright (c) 2019 Lucian Copeland for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +22,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-DEBUG = 1
+# DEBUG = 1
 
 # Select the board to build for.
 ifeq ($(BOARD),)
-  $(error You must provide a BOARD parameter)
+	$(error You must provide a BOARD parameter)
 else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(error Invalid BOARD specified)
-  endif
+	ifeq ($(wildcard boards/$(BOARD)/.),)
+		$(error Invalid BOARD specified)
+	endif
 endif
 
 # If the build directory is not given, make it reflect the board name.
@@ -79,36 +80,23 @@ INC += -I../../supervisor/shared/usb
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb
-  # You may want to enable these flags to make setting breakpoints easier.
-  CFLAGS += -fno-inline -fno-ipa-sra
+	CFLAGS += -ggdb
+	# You may want to enable these flags to make setting breakpoints easier.
+	CFLAGS += -fno-inline -fno-ipa-sra
 else
-  CFLAGS += -Os -DNDEBUG
-  # TODO: Test with -flto
-  ### CFLAGS += -flto
+	CFLAGS += -Os -DNDEBUG
+	CFLAGS += -ggdb
+	# TODO: Test with -flto
+	### CFLAGS += -flto
 endif
 
-# C defines and other board specifics
-ifeq ($(MCU_SUB_VARIANT), stm32f412zx)
-C_DEFS =  \
-	-DUSE_FULL_LL_DRIVER \
-	-DUSE_HAL_DRIVER \
-	-DSTM32F412Zx
-endif
 
-ifeq ($(MCU_SUB_VARIANT), stm32f411xe)
-C_DEFS =  \
-	-DUSE_FULL_LL_DRIVER \
-	-DUSE_HAL_DRIVER \
-	-DSTM32F411xE
-endif
-
-C_DEFS += -DMCU_PACKAGE=$(MCU_PACKAGE)
+C_DEFS = -DMCU_PACKAGE=$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(CMSIS_MCU)
 
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 # Undo some warnings.
-# STM32 apparently also uses undefined preprocessor variables quite casually, 
+# STM32 apparently also uses undefined preprocessor variables quite casually,
 # so we can't do warning checks for these.
 CFLAGS += -Wno-undef
 # STM32 might do casts that increase alignment requirements.
@@ -124,6 +112,22 @@ CFLAGS += \
 # TODO: check this
 CFLAGS += -D__START=main
 
+#need both command and valid file to use uf2 bootloader
+ifndef LD_FILE
+    ifneq ($(and $(UF2_BOOTLOADER),$(LD_BOOT)),)
+        LD_FILE = $(LD_BOOT)
+        BOOTLOADER_OFFSET = $(UF2_OFFSET)
+        CFLAGS += -DUF2_BOOTLOADER_ENABLED
+    else
+        LD_FILE = $(LD_DEFAULT)
+    endif
+endif
+
+# Add bootloader specific items
+ifndef BOOTLOADER_OFFSET
+	BOOTLOADER_OFFSET := 0x8000000
+endif
+
 LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
@@ -135,7 +139,7 @@ LIBS += -lm
 endif
 
 # TinyUSB defines
-CFLAGS += -DHSE_VALUE=8000000 -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BUFSIZE=1024 -DCFG_TUD_CDC_TX_BUFSIZE=1024 -DCFG_TUD_MSC_BUFSIZE=4096 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128
 
 
 ######################################
@@ -143,28 +147,21 @@ CFLAGS += -DHSE_VALUE=8000000 -DCFG_TUSB_MCU=OPT_MCU_STM32F4 -DCFG_TUD_CDC_RX_BU
 ######################################
 
 SRC_STM32 = \
-	boards/$(BOARD)/stm32f4xx_hal_msp.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
-	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
@@ -178,7 +175,20 @@ SRC_STM32 = \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
-	system_stm32f4xx.c  
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fsmc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_dma.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c \
+	stm32f4/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c \
+	system_stm32f4xx.c
+
 
 SRC_C += \
 	background.c \
@@ -190,6 +200,7 @@ SRC_C += \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/pins.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/clocks.c \
 	peripherals/stm32f4/$(MCU_SUB_VARIANT)/gpio.c \
+	peripherals/stm32f4/$(MCU_SUB_VARIANT)/periph.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
@@ -202,9 +213,9 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	supervisor/shared/memory.c
-	
+
 ifneq ($(USB),FALSE)
-SRC_C += lib/tinyusb/src/portable/st/stm32f4/dcd_stm32f4.c
+SRC_C += lib/tinyusb/src/portable/st/synopsys/dcd_synopsys.c
 endif
 
 SRC_S = \
@@ -212,17 +223,18 @@ SRC_S = \
 	boards/startup_$(MCU_SUB_VARIANT).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+						  $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
+							 $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+							 $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 
-
+ifneq ($(FROZEN_MPY_DIR),)
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
+endif
 
 OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_STM32:.c=.o))
@@ -253,16 +265,16 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary $^ $@
-#	$(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
+#   $(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O ihex $^ $@
-#	$(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
+#   $(Q)$(OBJCOPY) -O ihex -j .vectors -j .text -j .data $^ $@
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
-	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/firmware.uf2" $^
+	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
 
 include $(TOP)/py/mkrules.mk
 
