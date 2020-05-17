@@ -26,6 +26,7 @@
 
 #include "boards/board.h"
 #include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
 void board_init(void) {
 }

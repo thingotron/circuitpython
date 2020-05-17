@@ -1,13 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "Thingotron Orbotron 9001"
-#define MICROPY_HW_MCU_NAME "samd21e18"
+#define MICROPY_HW_MCU_NAME "samd21g18"
 
 // Rev B - Black
-#define MICROPY_HW_LED_STATUS   (&pin_PA10)
-
-#define MICROPY_HW_APA102_MOSI   (&pin_PA00)
-#define MICROPY_HW_APA102_SCK    (&pin_PA01)
-
-#define MICROPY_PORT_A        (PORT_PA00 | PORT_PA01)
+#define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
@@ -20,11 +15,11 @@
 #define IGNORE_PIN_PA02     1
 #define IGNORE_PIN_PA03     1
 #define IGNORE_PIN_PA04     1
-#define IGNORE_PIN_PA05     1
-#define IGNORE_PIN_PA06     1
-#define IGNORE_PIN_PA07     1
-#define IGNORE_PIN_PA08     1
-#define IGNORE_PIN_PA09     1
+// #define IGNORE_PIN_PA05     1
+// #define IGNORE_PIN_PA06     1
+// #define IGNORE_PIN_PA07     1
+// #define IGNORE_PIN_PA08     1
+// #define IGNORE_PIN_PA09     1
 
 #define IGNORE_PIN_PA12     1
 #define IGNORE_PIN_PA13     1
@@ -52,8 +47,8 @@
 #define IGNORE_PIN_PB05     1
 #define IGNORE_PIN_PB06     1
 #define IGNORE_PIN_PB07     1
-#define IGNORE_PIN_PB08     1
-#define IGNORE_PIN_PB09     1
+// #define IGNORE_PIN_PB08     1
+// #define IGNORE_PIN_PB09     1
 #define IGNORE_PIN_PB10     1
 #define IGNORE_PIN_PB11     1
 #define IGNORE_PIN_PB12     1
@@ -68,12 +63,12 @@
 #define IGNORE_PIN_PB31     1
 #define IGNORE_PIN_PB00     1
 
-//#define DEFAULT_I2C_BUS_SCL (&pin_PA09)
-//#define DEFAULT_I2C_BUS_SDA (&pin_PA08)
+#define DEFAULT_I2C_BUS_SCL (&pin_PA09)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA08)
 
-//#define DEFAULT_SPI_BUS_SCK (&pin_PA07)
-//#define DEFAULT_SPI_BUS_MOSI (&pin_PA06)
-//#define DEFAULT_SPI_BUS_MISO (&pin_PA09)
+#define DEFAULT_SPI_BUS_SCK (&pin_PA07)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA06)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA05)
 
-#define DEFAULT_UART_BUS_RX (&pin_PA11)
-#define DEFAULT_UART_BUS_TX (&pin_PA10)
+#define DEFAULT_UART_BUS_RX (&pin_PB09)
+#define DEFAULT_UART_BUS_TX (&pin_PB08)
