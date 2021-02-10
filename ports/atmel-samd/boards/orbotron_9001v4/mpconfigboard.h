@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit QT Py M0"
+#define MICROPY_HW_BOARD_NAME "Thingotron Orbotron 9001v4"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA18)

@@ -24,16 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "supervisor/shared/board.h"
+// ported from the CircuitPython 6 spec for QtPy
+// #include "supervisor/board.h"
+// #include "common-hal/microcontroller/Pin.h"
+// #include "supervisor/shared/board.h"
+// #include "hal/include/hal_gpio.h"
+#include "boards/board.h"
+#include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 
 void board_init(void) {
     gpio_set_pin_function(PIN_PA15, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_direction(PIN_PA15, GPIO_DIRECTION_OUT);
     gpio_set_pin_level(PIN_PA15, true); // Turn on neopixel by default
-    never_reset_pin_number(PIN_PA15);
+    //    never_reset_pin_number(PIN_PA15);
 }
 
 bool board_requests_safe_mode(void) {
